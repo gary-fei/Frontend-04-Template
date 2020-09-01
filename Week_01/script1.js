@@ -1,5 +1,5 @@
 const datas = [
-  [1, 0, 0],
+  [0, 1, 0],
   [0, 2, 0],
   [0, 0, 0],
 ]
@@ -10,17 +10,17 @@ function move(i, j) {
     return
   }
   datas[i][j] = color
-  if (check(datas)) {
-    alert(color === 1 ? 'o' : 'x')
+  if (check(datas, color)) {
+    alert(`${color === 1 ? 'o' : 'x'} is win`)
   }
   color = 3 - color
   showboard()
-  if (willWin(datas)) {
-    console.log(win)
-    alert(color === 1 ? 'o' : 'x')
+  const iswill = willWin(datas, color)
+  if (iswill) {
+    alert(`${color === 1 ? 'o' : 'x'} will win`)
   }
 }
-function check(pattern) {
+function check(pattern, color) {
   // row
   const row = pattern.some((arr) => {
     return arr.every((v) => v === color)
@@ -63,16 +63,19 @@ function check(pattern) {
 function clone(v) {
   return JSON.parse(JSON.stringify(v))
 }
-function willWin(datas) {
+function willWin(datas, color) {
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
       if (datas[i][j]) continue
       let tmp = clone(datas)
-      if (check(tmp)) {
-        return true
+      console.log(color)
+      tmp[i][j] = color
+      if (check(tmp, color)) {
+        return [j, i]
       }
     }
   }
+  return null
 }
 function showboard() {
   board.innerHTML = ''
@@ -89,4 +92,33 @@ function showboard() {
     board.appendChild(document.createElement('br'))
   }
 }
+function bestChoice(pattern, color) {
+  let p
+  if ((p = willWin(pattern, color))) {
+    return {
+      point: p,
+      result: 1,
+    }
+  }
+  let result = -2
+  let point = null
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (pattern[i][j]) continue
+      const tmp = clone(pattern)
+      tmp[i][j] = color
+      let r = bestChoice(tmp, 3 - color).result
+      if (-r > result) {
+        result = -r
+        point = [j, i]
+      }
+    }
+  }
+  return {
+    point: point,
+    result: point,
+    result: 0,
+  }
+}
 showboard()
+console.log(bestChoice(datas, color))
